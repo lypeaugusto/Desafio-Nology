@@ -1,0 +1,266 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0d0f1e;
+  --card: #13162b;
+  --card2: #181b32;
+  --border: rgba(255,255,255,0.06);
+  --accent-start: #a855f7;
+  --accent-end: #ec4899;
+  --text: #e2e8f0;
+  --text-muted: #4a5175;
+  --text-soft: #6b7494;
+  --input-bg: #0d0f1e;
+  --input-border: rgba(255,255,255,0.08);
+  --radius: 18px;
+  --radius-sm: 10px;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+#root {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Two-column layout ── */
+.layout {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 20px;
+  width: 100%;
+  max-width: 780px;
+  align-items: stretch;
+}
+@media (max-width: 640px) {
+  .layout { grid-template-columns: 1fr; }
+}
+
+/* ── Cards ── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 36px 32px;
+}
+.card-right {
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px 28px;
+  min-height: 320px;
+}
+
+/* ── Left card header ── */
+.brand-title {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.15;
+  margin-bottom: 8px;
+  color: #fff;
+}
+.brand-sub {
+  font-size: 13px;
+  color: var(--text-soft);
+  margin-bottom: 28px;
+}
+
+/* ── Section label ── */
+.section-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-soft);
+  margin-bottom: 10px;
+}
+
+/* ── Tipo toggle (pill slider) ── */
+.tipo-pill {
+  display: flex;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 100px;
+  padding: 4px;
+  margin-bottom: 22px;
+  position: relative;
+}
+.tipo-pill button {
+  flex: 1;
+  padding: 9px 0;
+  border: none;
+  border-radius: 100px;
+  background: transparent;
+  color: var(--text-soft);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+  transition: color 0.2s;
+}
+.tipo-pill button.active {
+  color: #fff;
+}
+.tipo-pill-slider {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  border-radius: 100px;
+  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  transition: left 0.22s cubic-bezier(.4,0,.2,1), right 0.22s cubic-bezier(.4,0,.2,1);
+  z-index: 0;
+}
+
+/* ── Field ── */
+.field {
+  margin-bottom: 18px;
+}
+.field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-soft);
+  margin-bottom: 8px;
+}
+.field input {
+  width: 100%;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 15px;
+  padding: 12px 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.field input:focus {
+  border-color: rgba(168, 85, 247, 0.5);
+}
+.field input::placeholder { color: var(--text-muted); font-size: 13px; }
+
+/* ── Calcular button ── */
+.btn-calc {
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  border: none;
+  border-radius: 100px;
+  color: #fff;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 6px;
+  transition: opacity 0.18s, transform 0.12s;
+  letter-spacing: 0.01em;
+}
+.btn-calc:hover { opacity: 0.9; transform: translateY(-1px); }
+.btn-calc:active { transform: translateY(0); }
+.btn-calc:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+/* ── Result ── */
+.result-box {
+  margin-top: 16px;
+  background: rgba(168,85,247,0.1);
+  border: 1px solid rgba(168,85,247,0.25);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  animation: fadeUp 0.28s ease;
+}
+.result-label { font-size: 12px; color: var(--text-soft); }
+.result-val {
+  font-size: 30px;
+  font-weight: 800;
+  color: #10b981;
+  text-shadow: 0 0 18px rgba(16,185,129,0.35);
+}
+
+/* ── Error ── */
+.error-msg {
+  margin-top: 12px;
+  background: rgba(239,68,68,0.08);
+  border: 1px solid rgba(239,68,68,0.25);
+  border-radius: var(--radius-sm);
+  color: #f87171;
+  padding: 10px 14px;
+  font-size: 13px;
+  animation: fadeUp 0.25s ease;
+}
+
+/* ── Historico (right) ── */
+.hist-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 20px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 50px 10px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* ── Table ── */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th {
+  padding: 8px 10px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+tbody tr { border-bottom: 1px solid rgba(255,255,255,0.03); transition: background 0.15s; }
+tbody tr:hover { background: rgba(255,255,255,0.02); }
+tbody td { padding: 11px 10px; color: var(--text-soft); vertical-align: middle; }
+tbody td.cashback-val {
+  font-weight: 700;
+  color: #10b981;
+  text-shadow: 0 0 12px rgba(16,185,129,0.3);
+}
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.badge-comum { background: rgba(168,85,247,0.12); color: #c084fc; }
+.badge-vip   { background: rgba(245,158,11,0.12);  color: #fbbf24; }
+
+/* ── Spinner ── */
+.spinner {
+  display: inline-block;
+  width: 14px; height: 14px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+@keyframes spin    { to { transform: rotate(360deg); } }
+@keyframes fadeUp  { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
