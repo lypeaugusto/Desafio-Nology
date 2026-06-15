@@ -1,82 +1,94 @@
 from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
-from typing import List
 from pydantic import BaseModel
-import models, database
+import os
 
-# Criar as tabelas no banco de dados
-models.Base.metadata.create_all(bind=database.engine)
+import database
+import cashback as cashback_module
+
+# Cria as tabelas do banco de dados (no SQLite ou Postgres)
+database.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI(title="Cashback API")
 
-# Configurar CORS para permitir que o frontend acesse a API
+# Habilitar CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Permitir todos (apenas para ambiente de desenvolvimento)
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Schemas Pydantic para validação de dados
+# Dependência do DB
+def get_db():
+    db = database.SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
 class ConsultaRequest(BaseModel):
-    valor_compra: float
-    desconto_percentual: float
-    tipo_cliente: str  # 'VIP' ou 'Comum'
+    tipo_cliente: str # 'vip' ou 'normal'
+    preco_original: float
+    desconto_percent: float = 0.0
 
-from datetime import datetime
+def calcular_cashback(valor_final: float, is_vip: bool) -> float:
+    # Mantemos essa função compatível, delegando ao módulo cashback
+    return cashback_module.calcular_cashback(valor_final, is_vip)["cashback_final"]
 
-class ConsultaResponse(BaseModel):
-    id: int
-    ip_usuario: str
-    tipo_cliente: str
-    valor_compra: float
-    desconto_percentual: float
-    cashback_gerado: float
-    data_consulta: datetime
-
-    model_config = {"from_attributes": True}
-
-# Função principal de cálculo do cashback
-def calcular_cashback(valor_compra: float, desconto_percentual: float, is_vip: bool) -> float:
-    valor_final = valor_compra * (1 - desconto_percentual / 100)
-    cashback_base = valor_final * 0.05
-    cashback_bonus = cashback_base * 0.10 if is_vip else 0.0
-    cashback_total = cashback_base + cashback_bonus
-    
-    if valor_final > 500:
-        cashback_total *= 2
-        
-    return round(cashback_total, 2)
-
-@app.post("/calcular", response_model=ConsultaResponse)
-def realizar_consulta(consulta: ConsultaRequest, request: Request, db: Session = Depends(database.get_db)):
+@app.post("/api/cashback")
+def calculate_and_save(request: Request, data: ConsultaRequest, db: Session = Depends(get_db)):
+    # Obter o IP do cliente
     ip = request.client.host
-    is_vip = consulta.tipo_cliente.upper() == "VIP"
+    if request.headers.get("X-Forwarded-For"):
+        ip = request.headers.get("X-Forwarded-For").split(",")[0]
+        
+    is_vip = data.tipo_cliente.lower().strip() == 'vip'
+    # Calcular a partir do preço original e desconto
+    resultado = cashback_module.compute_from_price(data.preco_original, data.desconto_percent, is_vip)
+    cashback = resultado["cashback_final"]
+    valor_final = resultado["valor_final"]
     
-    cashback = calcular_cashback(
-        valor_compra=consulta.valor_compra,
-        desconto_percentual=consulta.desconto_percentual,
-        is_vip=is_vip
-    )
-    
-    nova_consulta = models.ConsultaCashback(
+    # Registrar no banco
+    nova_consulta = database.Consulta(
         ip_usuario=ip,
-        tipo_cliente=consulta.tipo_cliente,
-        valor_compra=consulta.valor_compra,
-        desconto_percentual=consulta.desconto_percentual,
+        tipo_cliente=data.tipo_cliente,
+        valor_compra=data.preco_original,
+        desconto_percent=data.desconto_percent,
+        valor_final=valor_final,
         cashback_gerado=cashback
     )
-    
     db.add(nova_consulta)
     db.commit()
     db.refresh(nova_consulta)
     
-    return nova_consulta
+    return {"cashback": cashback}
 
-@app.get("/historico", response_model=List[ConsultaResponse])
-def obter_historico(request: Request, db: Session = Depends(database.get_db)):
+@app.get("/api/historico")
+def get_historico(request: Request, db: Session = Depends(get_db)):
+    # Obter o IP do cliente
     ip = request.client.host
-    consultas = db.query(models.ConsultaCashback).filter(models.ConsultaCashback.ip_usuario == ip).order_by(models.ConsultaCashback.data_consulta.desc()).all()
-    return consultas
+    if request.headers.get("X-Forwarded-For"):
+        ip = request.headers.get("X-Forwarded-For").split(",")[0]
+        
+    consultas = db.query(database.Consulta).filter(database.Consulta.ip_usuario == ip).order_by(database.Consulta.data_consulta.desc()).all()
+
+    return [
+        {
+            "id": c.id,
+            "tipo_cliente": c.tipo_cliente,
+            "valor_compra": c.valor_compra,
+            "desconto_percent": c.desconto_percent,
+            "valor_final": c.valor_final,
+            "cashback_gerado": c.cashback_gerado,
+            "data_consulta": c.data_consulta.strftime("%d/%m/%Y %H:%M:%S")
+        }
+        for c in consultas
+    ]
+
+# Monta os arquivos estáticos (Frontend)
+app.mount("/", StaticFiles(directory="static", html=True), name="static")

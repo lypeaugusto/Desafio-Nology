@@ -1,10 +1,8 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import path from 'path'
 
 export default defineConfig({
   plugins: [react()],
-  root: '.',
   server: {
     port: 5173,
     proxy: {
@@ -15,8 +13,8 @@ export default defineConfig({
     }
   },
   build: {
-    outDir: path.resolve(__dirname, '../static'),
-    emptyOutDir: false,
+    outDir: 'dist',
+    emptyOutDir: true,
     sourcemap: false
   }
 })

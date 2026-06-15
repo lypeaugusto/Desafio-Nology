@@ -1,23 +1,28 @@
-import os
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+import os
+import datetime
 
-# Usa a variável de ambiente do Render ou fallback para localhost
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://admin:password@localhost:5432/cashback_db")
+# Usando SQLite localmente por padrão se o DATABASE_URL não estiver definido, 
+# mas suporta Postgres através do docker-compose
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./sql_app.db")
 
-# O SQLAlchemy 1.4+ exige 'postgresql://', mas o Render às vezes injeta 'postgres://'
-if SQLALCHEMY_DATABASE_URL.startswith("postgres://"):
-    SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("postgres://", "postgresql://", 1)
+# Ajuste para SQLite funcionar perfeitamente com FastAPI
+connect_args = {"check_same_thread": False} if SQLALCHEMY_DATABASE_URL.startswith("sqlite") else {}
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
+engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args=connect_args)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
 Base = declarative_base()
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+class Consulta(Base):
+    __tablename__ = "consultas"
+
+    id = Column(Integer, primary_key=True, index=True)
+    ip_usuario = Column(String, index=True)
+    tipo_cliente = Column(String)
+    valor_compra = Column(Float)
+    desconto_percent = Column(Float, default=0.0)
+    valor_final = Column(Float)
+    cashback_gerado = Column(Float)
+    data_consulta = Column(DateTime, default=datetime.datetime.utcnow)
