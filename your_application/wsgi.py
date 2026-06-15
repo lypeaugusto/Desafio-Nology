@@ -6,6 +6,7 @@ import sys
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(root, "backend"))
 
+from asgiref.wsgi import AsgiToWsgi
 from main import app
 
-application = app
+application = AsgiToWsgi(app)
