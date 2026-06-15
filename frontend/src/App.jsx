@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import './styles.css'
 
-const API_BASE = ''
+const API_BASE = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE) ? import.meta.env.VITE_API_BASE : ''
 
 export default function App() {
   const [tipo, setTipo] = useState('comum')
