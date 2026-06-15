@@ -6,7 +6,11 @@ import sys
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(root, "backend"))
 
-from asgiref.wsgi import AsgiToWsgi
+from asgiref.sync import AsyncToSync
+from asgiref.sync import sync_to_async
+
 from main import app
 
-application = AsgiToWsgi(app)
+# Wrap the FastAPI ASGI app for a WSGI server.
+# We use `AsyncToSync` to allow gunicorn's sync workers to call the ASGI app.
+application = AsyncToSync(app)
