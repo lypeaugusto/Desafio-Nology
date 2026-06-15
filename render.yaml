@@ -13,12 +13,3 @@ services:
         scope: runtime
         sync: false
     autoDeploy: true
-
-  - type: web
-    name: cashback-frontend
-    runtime: static
-    rootDir: static
-    autoDeploy: true
-    routes:
-      - path: /*
-        destination: /index.html
