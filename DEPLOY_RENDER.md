@@ -37,8 +37,9 @@ git push origin main
 3. Configure:
    - **Name**: `cashback-api`
    - **Runtime**: `Python 3`
-   - **Build Command**: `pip install -r backend/requirements.txt && cd frontend && npm install && npm run build && cd ..`
-   - **Start Command**: `cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT`
+   - **Root Directory**: `backend`
+   - **Build Command**: `pip install -r requirements.txt && cd ../frontend && npm install && npm run build && rm -rf ../static/* && cp -r dist/* ../static/`
+   - **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
 4. **Environment Variables**:
    - `DATABASE_URL`: Cole a URL do PostgreSQL gerada no passo anterior
 5. Clique em **Create Web Service**
