@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: cashback-api
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt && cd ../frontend && npm install && npm run build && cd ..
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        scope: build
+        sync: false
+      - key: DATABASE_URL
+        scope: runtime
+        sync: false
+    autoDeploy: true
+
+  - type: web
+    name: cashback-frontend
+    runtime: static
+    rootDir: static
+    autoDeploy: true
+    routes:
+      - path: /*
+        destination: /index.html
