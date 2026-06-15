@@ -1,120 +1,13 @@
 <!doctype html>
-<html lang="pt-BR">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Calculadora de Cashback (React)</title>
-        <style>
-            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
-            .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-            h1 { text-align: center; color: #333; }
-            .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-            .form-group { margin-bottom: 12px; }
-            label { display:block; font-weight:600; margin-bottom:6px; }
-            input, select, button { width:100%; padding:10px; border-radius:6px; border:1px solid #ccc; }
-            button { background:#007bff; color:#fff; font-weight:700; cursor:pointer; }
-            table { width:100%; border-collapse:collapse; margin-top:16px; }
-            th, td { padding:10px; border-bottom:1px solid #eee; text-align:left; }
-        </style>
-        <!-- React + ReactDOM + Babel via CDN -->
-        <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-        <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-        <script crossorigin src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
-    </head>
-    <body>
-        <div id="root"></div>
-
-        <script type="text/babel">
-            const { useState, useEffect } = React;
-            const API = '';
-
-            function App(){
-                const [tipo, setTipo] = useState('normal');
-                const [preco, setPreco] = useState('600');
-                const [desconto, setDesconto] = useState('0');
-                const [resultado, setResultado] = useState(null);
-                const [historico, setHistorico] = useState([]);
-
-                useEffect(()=>{ carregarHistorico(); }, []);
-
-                async function carregarHistorico(){
-                    try{
-                        const res = await fetch(`${API}/api/historico`);
-                        const dados = await res.json();
-                        setHistorico(dados);
-                    }catch(e){ console.error(e); }
-                }
-
-                async function calcular(){
-                    const p = parseFloat(preco);
-                    const d = parseFloat(desconto) || 0;
-                    if(isNaN(p) || p <= 0){ alert('Insira um preço válido'); return; }
-
-                    try{
-                        const res = await fetch(`${API}/api/cashback`,{
-                            method:'POST', headers: {'Content-Type':'application/json'},
-                            body: JSON.stringify({ tipo_cliente: tipo, preco_original: p, desconto_percent: d })
-                        });
-                        const data = await res.json();
-                        setResultado(data.cashback.toFixed(2));
-                        carregarHistorico();
-                    }catch(e){ console.error(e); alert('Erro ao chamar API'); }
-                }
-
-                return (
-                    <div className="container">
-                        <h1>Cálculo de Cashback</h1>
-
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label>Tipo de Cliente</label>
-                                <select value={tipo} onChange={e=>setTipo(e.target.value)}>
-                                    <option value="normal">Normal</option>
-                                    <option value="vip">VIP</option>
-                                </select>
-                            </div>
-                            <div className="form-group">
-                                <label>Preço Original (R$)</label>
-                                <input type="number" value={preco} onChange={e=>setPreco(e.target.value)} step="0.01" />
-                            </div>
-                            <div className="form-group">
-                                <label>Desconto (%)</label>
-                                <input type="number" value={desconto} onChange={e=>setDesconto(e.target.value)} step="0.01" />
-                            </div>
-                            <div className="form-group" style={{alignSelf:'end'}}>
-                                <button onClick={calcular}>Calcular Cashback</button>
-                            </div>
-                        </div>
-
-                        {resultado && (
-                            <div style={{marginTop:12, padding:12, background:'#e9ecef', borderRadius:6, fontWeight:700}}>
-                                Cashback a receber: R$ {resultado}
-                            </div>
-                        )}
-
-                        <h2 style={{marginTop:18}}>Seu Histórico (IP)</h2>
-                        <table>
-                            <thead>
-                                <tr><th>Data</th><th>Cliente</th><th>Preço (R$)</th><th>Desconto</th><th>Valor Final (R$)</th><th>Cashback (R$)</th></tr>
-                            </thead>
-                            <tbody>
-                                {historico.map(item=> (
-                                    <tr key={item.id}>
-                                        <td>{item.data_consulta}</td>
-                                        <td style={{textTransform:'capitalize'}}>{item.tipo_cliente}</td>
-                                        <td>{parseFloat(item.valor_compra).toFixed(2)}</td>
-                                        <td>{(item.desconto_percent||0).toFixed(2)}%</td>
-                                        <td>{(item.valor_final||item.valor_compra).toFixed(2)}</td>
-                                        <td style={{color:'#28a745', fontWeight:700}}>{parseFloat(item.cashback_gerado).toFixed(2)}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                );
-            }
-
-            ReactDOM.createRoot(document.getElementById('root')).render(<App />);
-        </script>
-    </body>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cashback App</title>
+    <script type="module" crossorigin src="/assets/index--i-c4Yft.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-DsUrYDdd.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
 </html>
